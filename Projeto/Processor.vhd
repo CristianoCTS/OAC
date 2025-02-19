@@ -8,7 +8,7 @@ end testbench;
 
 ------------------------------------Entradas & Saidas-----------------------------------
 architecture test of testbench is
-    constant clock_duration : time := 2 ns;
+    constant clock_duration : time := 500 ns;
     signal A1_PC : std_logic_vector(31 downto 0);
     signal A1_PC4 : std_logic_vector(31 downto 0);
     signal A2_PC : std_logic_vector(31 downto 0);
@@ -45,10 +45,11 @@ architecture test of testbench is
     signal M3_MemtoReg : std_logic;
     signal M3_ULAresult : std_logic_vector(31 downto 0);
     signal M3_ReadData : std_logic_vector(31 downto 0);
+    signal M3_PC : std_logic_vector(31 downto 0);
+    signal M3_Branch : std_logic;
     signal M3_WriteData : std_logic_vector(31 downto 0);
     signal PC_NextPC : std_logic_vector(31 downto 0);
     signal PC_PC : std_logic_vector(31 downto 0);
-    signal clk : std_logic;
     signal R_RegWrite : std_logic;
     signal R_ReadRegister1 : std_logic_vector(31 downto 0);
     signal R_ReadRegister2 : std_logic_vector(31 downto 0);
@@ -102,6 +103,8 @@ architecture test of testbench is
             M3_MemtoReg : in std_logic;
             M3_ULAresult : in std_logic_vector(31 downto 0);
             M3_ReadData : in std_logic_vector(31 downto 0);
+            M3_PC : in std_logic_vector(31 downto 0);
+            M3_Branch : in std_logic;
             M3_WriteData : out std_logic_vector(31 downto 0)
         );
     end component;
@@ -151,7 +154,7 @@ architecture test of testbench is
     end component;
     component Registers
         port (
-        clk, R_RegWrite : in std_logic;
+        clck, R_RegWrite : in std_logic;
         R_ReadRegister1, R_ReadRegister2, R_WriteRegister : in std_logic_vector(31 downto 0);
         R_WriteData : in std_logic_vector(31 downto 0);
         R_ReadData1, R_ReadData2 : out std_logic_vector(31 downto 0)
@@ -213,6 +216,8 @@ architecture test of testbench is
                 M3_MemtoReg => C_MemtoReg,
                 M3_ULAresult => U_ULAResult,
                 M3_ReadData => DM_ReadData,
+                M3_PC => PC_PC,
+                M3_Branch => C_Branch,
                 M3_WriteData =>  M3_WriteData
              );
         base7: Control_Unit
@@ -256,7 +261,7 @@ architecture test of testbench is
              );
         base12: Registers
              port map  (
-                clk => clk,
+                clck => clck,
                 R_RegWrite => C_RegWrite,
                 R_ReadRegister1 => IM_Instruction,
                 R_ReadRegister2 => IM_Instruction,
@@ -296,10 +301,7 @@ end process;
 process
     begin
         for i in 0 to 30 loop
-            clk <= '0';
-            wait for clock_duration/2;
-            clk <= '1';
-            wait for clock_duration/2;
+        	wait for clock_duration/2;
             case IM_Instruction(6 downto 0) is
                 when "0110011" => report "PC :(" & to_string(PC_PC) & ") => instruction(R): (" & to_string(IM_Instruction(31 downto 25)) & " " & to_string(IM_Instruction(24 downto 20)) & " " & to_string(IM_Instruction(19 downto 15)) & " " & to_string(IM_Instruction(14 downto 12)) & " " & to_string(IM_Instruction(11 downto 7)) & " " & to_string(IM_Instruction(6 downto 0)) & ")";
                 when "0000011" => report "PC :(" & to_string(PC_PC) & ") => instruction(I): (" & to_string(IM_Instruction(31 downto 20)) & " " & to_string(IM_Instruction(19 downto 15)) & " " & to_string(IM_Instruction(14 downto 12)) & " " & to_string(IM_Instruction(11 downto 7)) & " " & to_string(IM_Instruction(6 downto 0)) & ")";
@@ -309,6 +311,10 @@ process
                 when "1101111" | "1100111" => report "PC :(" & to_string(PC_PC) & ") => instruction(UJ): (" & to_string(IM_Instruction(31 downto 7)) & " " & to_string(IM_Instruction(6 downto 0)) & ")";
                 when others => report "PC :(" & to_string(PC_PC) & ") => invalid instruction: (" & to_string(IM_Instruction) & ")";
             end case;
+            report "C_ULAOp: " & to_string(C_ULAOp) & ", C_RegWrite: " & to_string(C_RegWrite) & ", C_MemRead: " & to_string(C_MemRead) & ", C_MemtoReg: " & to_string(C_MemtoReg) & ", C_MemWrite: " & to_string(C_MemWrite) & ", C_ULASrc: " & to_string(C_ULASrc) & ", C_Branch: " & to_string(C_Branch);
+            clck <= '0';
+            wait for clock_duration/2;
+            clck <= '1';
      end loop;
 wait;
 end process;

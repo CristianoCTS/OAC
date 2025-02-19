@@ -8,13 +8,13 @@ entity Program_Counter is
         clck : in std_logic;
         reset : in std_logic;
         PC_NextPC : in std_logic_vector(31 downto 0);
-        PC_PC : out std_logic_vector(31 downto 0)
+        PC_PC : buffer std_logic_vector(31 downto 0) := x"00000000"
     );
 end Program_Counter;
 
 architecture behavior of Program_Counter is
 begin
-    process (clck)
+    process (clck, reset)
     begin
         if rising_edge(clck) then
             if (reset = '1') then
