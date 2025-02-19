@@ -1,0 +1,6 @@
+I (LB, LW, LBU)
+S (SB, SW)
+R (SLT, SLTu, ADD, SUB, XOR, AND, SLL, OR, SRL, SRA)
+U (AUIPC, LUI)
+UJ (JAL, JALR)
+SB (BEQ, BNE)
